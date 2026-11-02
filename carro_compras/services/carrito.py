@@ -1,50 +1,154 @@
-from flask import jsonify
+"""Lógica del carrito de compras.
 
-# Creacion de la clase Producto donde se definen los campos de ingreso.
+El carrito se guarda como un diccionario {"id_producto": cantidad}. Así puede
+vivir en la sesión de Flask (una cookie firmada) en lugar de en la memoria del
+servidor. Esto es necesario en Vercel: cada petición puede llegar a una
+instancia distinta de la función, por lo que una lista en memoria se perdería
+entre peticiones y, además, sería compartida por todos los visitantes.
+
+El precio, el nombre y el stock salen siempre del catálogo del servidor; el
+navegador solo envía el id del producto y la cantidad.
+"""
+
+
 class Producto:
-    def __init__(self,id_producto,nombre,precio,stock,cantidad):
+    """Producto del catálogo."""
+
+    def __init__(self, id_producto, nombre, precio, stock, categoria, descripcion=""):
         self.id_producto = int(id_producto)
         self.nombre = str(nombre)
         self.precio = float(precio)
         self.stock = int(stock)
-        self.cantidad = int(cantidad)
+        self.categoria = str(categoria)
+        self.descripcion = str(descripcion)
+
+    def to_dict(self):
+        return {
+            "id_producto": self.id_producto,
+            "nombre": self.nombre,
+            "precio": self.precio,
+            "stock": self.stock,
+            "categoria": self.categoria,
+            "descripcion": self.descripcion,
+        }
 
 
-# Creacion del carrito
+class ErrorCarrito(Exception):
+    """Error de negocio que se devuelve al cliente con un código HTTP."""
+
+    def __init__(self, mensaje, status=400):
+        super().__init__(mensaje)
+        self.mensaje = mensaje
+        self.status = status
+
+
+def _entero(valor, campo):
+    # bool es subclase de int: True no debe contar como 1.
+    if isinstance(valor, bool):
+        raise ErrorCarrito(f"El campo '{campo}' debe ser un número entero.")
+    try:
+        numero = int(valor)
+    except (TypeError, ValueError, OverflowError):
+        raise ErrorCarrito(f"El campo '{campo}' debe ser un número entero.") from None
+    if isinstance(valor, float) and numero != valor:
+        raise ErrorCarrito(f"El campo '{campo}' debe ser un número entero.")
+    return numero
+
+
 class CarritoCompra:
-    def __init__(self):
-        self.carrito = [] # Inicio de ina lista que funcionara como el carrito.
+    """Carrito de un visitante.
 
-    # Ingreso de elementos a la lista.
-    def add_items(self,producto):
-        self.carrito.append(producto)
+    `buscar_producto` es una función id -> Producto | None (el catálogo).
+    `items` es lo guardado en la sesión: una lista de pares [id, cantidad]
+    (una lista, y no un diccionario, para conservar el orden en que se
+    añadieron los productos).
+    """
 
+    def __init__(self, buscar_producto, items=None):
+        self._buscar_producto = buscar_producto
+        self.items = {}
+        if isinstance(items, dict):
+            items = list(items.items())
+        if not isinstance(items, list):
+            items = []
+        # Se limpia lo que venga de la sesión: productos que ya no existen,
+        # cantidades inválidas o mayores al stock actual.
+        for par in items:
+            try:
+                id_producto, cantidad = par
+                producto = self._buscar_producto(int(id_producto))
+                cantidad = int(cantidad)
+            except (TypeError, ValueError, OverflowError):
+                continue
+            if producto is None or cantidad < 1 or producto.stock < 1:
+                continue
+            self.items[str(producto.id_producto)] = min(cantidad, producto.stock)
 
-    # Muestra de productos de la lista, se usa una lista de diccionarios intermedia para mostrar los productos.
-    def show_item(self):
-        try:
-            muestra_productos = []
-            for products in self.carrito:
-                muestra_productos.append({'id_producto' : products.id_producto,'nombre' : products.nombre,'precio' : products.precio,'stock' : products.stock,'cantidad' : products.cantidad})
-            return jsonify({'Carrito' : f'{muestra_productos}'}),200
-        except Exception as error:
-            return jsonify({'Error' : f'error en mostrar el carrito : {error}'}),400
+    def para_sesion(self):
+        return [[int(clave), cantidad] for clave, cantidad in self.items.items()]
 
+    def _producto(self, id_producto):
+        producto = self._buscar_producto(_entero(id_producto, "id_producto"))
+        if producto is None:
+            raise ErrorCarrito("El producto no existe en el catálogo.", 404)
+        return producto
 
-    # Remocion de un solo elemento de la lista.
-    def remove_item(self,producto):
-        try:
-            for products in self.carrito[:]:
-                if products.nombre == producto:
-                    self.carrito.remove(products)
-                    return jsonify({'Mensaje' : f'Producto {products} eliminado con exito.'}),200
-            else:
-                return jsonify({'Mensaje' : f'Producto {products} no encontrado.'}),200
-        except Exception as error:
-            return jsonify({'Error' : f'Error en la eliminacion del producto : {error}'})
+    # Ingreso de productos al carrito (suma a la cantidad que ya hubiera).
+    def add_items(self, id_producto, cantidad=1):
+        producto = self._producto(id_producto)
+        cantidad = _entero(cantidad, "cantidad")
+        if cantidad < 1:
+            raise ErrorCarrito("La cantidad debe ser al menos 1.")
+        clave = str(producto.id_producto)
+        nueva_cantidad = self.items.get(clave, 0) + cantidad
+        if nueva_cantidad > producto.stock:
+            raise ErrorCarrito(
+                f"Solo hay {producto.stock} unidades de {producto.nombre}.", 409
+            )
+        self.items[clave] = nueva_cantidad
+        return producto
 
+    # Cambio de la cantidad de un producto que ya está en el carrito (0 lo quita).
+    def update_item(self, id_producto, cantidad):
+        producto = self._producto(id_producto)
+        cantidad = _entero(cantidad, "cantidad")
+        clave = str(producto.id_producto)
+        if clave not in self.items:
+            raise ErrorCarrito("El producto no está en el carrito.", 404)
+        if cantidad < 0:
+            raise ErrorCarrito("La cantidad no puede ser negativa.")
+        if cantidad > producto.stock:
+            raise ErrorCarrito(
+                f"Solo hay {producto.stock} unidades de {producto.nombre}.", 409
+            )
+        if cantidad == 0:
+            del self.items[clave]
+        else:
+            self.items[clave] = cantidad
+        return producto
 
-    # Eliminacion de todos los elementos de la lista.
+    # Remoción de un solo producto del carrito.
+    def remove_item(self, id_producto):
+        producto = self._producto(id_producto)
+        clave = str(producto.id_producto)
+        if clave not in self.items:
+            raise ErrorCarrito("El producto no está en el carrito.", 404)
+        del self.items[clave]
+        return producto
+
+    # Eliminación de todos los productos del carrito.
     def clear_cart(self):
-        self.carrito.clear()
-        return jsonify({'Mensaje' : 'carrito vacio.'}),200
+        self.items.clear()
+
+    # Resumen del carrito listo para enviarse como JSON.
+    def show_item(self):
+        productos = []
+        total = 0.0
+        unidades = 0
+        for clave, cantidad in self.items.items():
+            producto = self._buscar_producto(int(clave))
+            subtotal = round(producto.precio * cantidad, 2)
+            productos.append({**producto.to_dict(), "cantidad": cantidad, "subtotal": subtotal})
+            total += subtotal
+            unidades += cantidad
+        return {"carrito": productos, "total": round(total, 2), "unidades": unidades}

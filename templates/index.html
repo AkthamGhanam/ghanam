@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHANAM - Inicio</title>
+    <link rel="icon" type="image/png" href="/resource/GHANAM.png">
+    <link rel="stylesheet" href="/style/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Colores propios de la marca para las clases de Tailwind (ej. from-premium-gold).
+        tailwind.config = { theme: { extend: { colors: { 'premium-gold': '#c5a059' } } } };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <!-- Overlay de Búsqueda Fullscreen (Estilo Apple con Diferenciador GHANAM) -->
+    <div id="search-overlay" class="flex-col items-center pt-16 px-6 sm:pt-24">
+        <div class="w-full max-w-2xl search-container-mobile">
+            <!-- Header del buscador móvil -->
+            <div class="flex items-center justify-between mb-10">
+                <span class="text-[10px] uppercase tracking-[0.4em] text-white/30 font-bold">Búsqueda Global</span>
+                <button type="button" onclick="toggleSearch()" class="flex items-center space-x-2 group">
+                    <span class="text-[10px] uppercase tracking-widest text-white/50 group-hover:text-white transition-colors">Cerrar</span>
+                    <div class="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 group-hover:bg-white/20 transition-all">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Input Principal -->
+            <div class="relative mb-12">
+                <input type="search" id="mobile-search-input" placeholder="¿Qué estás buscando hoy?" enterkeyhint="search"
+                       class="w-full bg-transparent border-b border-white/20 pb-4 text-2xl font-light text-white outline-none placeholder:text-white/20">
+            </div>
+
+            <!-- Diferenciador: Grid de Búsquedas Sugeridas con Estilo Lujoso -->
+            <div class="space-y-8">
+                <h3 class="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Explora lo más exclusivo</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="button" data-categoria="premium" class="suggestion-chip p-6 rounded-2xl cursor-pointer group text-left">
+                        <span class="block text-white/90 text-sm mb-1 group-hover:text-yellow-500 transition-colors">Colección Oro</span>
+                        <span class="text-[9px] text-white/30 uppercase tracking-wider">Premium</span>
+                    </button>
+                    <button type="button" data-categoria="relojes" class="suggestion-chip p-6 rounded-2xl cursor-pointer group text-left">
+                        <span class="block text-white/90 text-sm mb-1 group-hover:text-yellow-500 transition-colors">Relojes Fríos</span>
+                        <span class="text-[9px] text-white/30 uppercase tracking-wider">Minimalista</span>
+                    </button>
+                    <button type="button" data-categoria="todos" class="suggestion-chip p-6 rounded-2xl cursor-pointer group text-left">
+                        <span class="block text-white/90 text-sm mb-1 group-hover:text-yellow-500 transition-colors">Accesorios</span>
+                        <span class="text-[9px] text-white/30 uppercase tracking-wider">Detalles</span>
+                    </button>
+                    <button type="button" data-busqueda="Nuevo Éxito" class="suggestion-chip p-6 rounded-2xl cursor-pointer group text-left">
+                        <span class="block text-white/90 text-sm mb-1 group-hover:text-yellow-500 transition-colors">Nuevo Éxito</span>
+                        <span class="text-[9px] text-white/30 uppercase tracking-wider">Tendencia</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 flex justify-center p-4 sm:p-6">
+        <nav class="apple-glass flex items-center px-4 py-2 rounded-full shadow-2xl max-w-full">
+
+            <!-- Logo Nav -->
+            <a href="#" class="flex items-center mr-4 sm:mr-6 border-r border-white/10 pr-4 sm:pr-6" aria-label="Inicio">
+                <img src="/resource/GHANAM.png" alt="GHANAM" class="w-5 h-5 sm:w-6 sm:h-6 object-contain invert">
+            </a>
+
+            <!-- Links Desktop -->
+            <div class="hidden md:flex items-center space-x-6 font-semibold uppercase text-gray-400">
+                <a href="#" class="nav-link text-white hover:text-white">Inicio</a>
+                <a href="#coleccion" data-categoria="calidos" class="nav-link hover:text-white">Cálidos</a>
+                <a href="#coleccion" data-categoria="frios" class="nav-link hover:text-white">Fríos</a>
+                <a href="#coleccion" data-categoria="relojes" class="nav-link hover:text-white">Relojes</a>
+                <a href="#coleccion" data-categoria="premium" class="nav-link text-yellow-500/80 hover:text-yellow-400">Premium</a>
+            </div>
+
+            <!-- Divisor -->
+            <div class="hidden md:block mx-4 h-4 w-[1px] bg-white/10"></div>
+
+            <!-- Buscador (Trigger para el Overlay en móviles, input en PC) -->
+            <div class="relative flex items-center">
+                <button type="button" onclick="toggleSearch()" class="md:hidden p-2 text-gray-400" aria-label="Buscar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+                <div class="hidden md:block relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="search" id="desktop-search-input" placeholder="Buscar" aria-label="Buscar productos"
+                           class="search-input rounded-full pl-9 pr-4 w-32 text-white text-xs">
+                </div>
+            </div>
+
+            <!-- Carrito -->
+            <button type="button" id="cart-button" class="cart-button ml-2 sm:ml-4" aria-label="Abrir carrito" aria-controls="cart-drawer" aria-expanded="false">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 7h12l-1 12a2 2 0 01-2 2H9a2 2 0 01-2-2L6 7z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 7V6a3 3 0 016 0v1"></path>
+                </svg>
+                <span id="cart-count" class="cart-count" hidden>0</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Section -->
+    <section class="section-one">
+        <div class="section-one-principal">
+            <div class="section-one-content">
+
+                <!-- Logo Central -->
+                <div class="logo-container">
+                    <img src="/resource/GHANAM.png" alt="GHANAM Logo" class="main-logo-img"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <!-- Fallback -->
+                    <div style="display:none;" class="text-3xl font-bold tracking-[0.4em] text-gray-900 uppercase">
+                        GHANAM
+                    </div>
+                </div>
+
+                <!-- Eslogan -->
+                <p class="slogan px-4">
+                    "Acompañamos a cada hombre y mujer en el éxito más grande"
+                </p>
+
+                <!-- CTA -->
+                <div class="mt-10">
+                    <button type="button" data-categoria="todos" class="px-10 py-3.5 bg-gray-900 hover:bg-black text-white rounded-full text-[10px] uppercase tracking-[0.2em] transition-all duration-300 shadow-lg hover:shadow-xl active:scale-95">
+                        Explorar Colección
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+        <!-- Panel Premium (Lado a Lado) - Ahora cierra la página -->
+    <section class="section-premium-full">
+        <div class="premium-glow"></div>
+
+        <h2 class="premium-title">PREMIUM</h2>
+
+        <div class="relative z-10">
+            <button type="button" data-categoria="premium" class="btn-premium">
+                Sala Premium
+            </button>
+        </div>
+
+        <!-- Adorno minimalista final -->
+        <div class="mt-12 w-[1px] h-20 bg-gradient-to-b from-premium-gold to-transparent opacity-30"></div>
+
+    </section>
+
+    <!-- Sección de Categorías Cuadradas (Debajo de Premium) -->
+    <section id="categories" class="categories-grid">
+        <!-- Panel CÁLIDOS -->
+        <div class="category-square warm-design">
+            <!-- Partículas de "calor" -->
+            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#ffaa00 1px, transparent 1px); background-size: 40px 40px;"></div>
+            <h3 class="category-label">CÁLIDOS</h3>
+            <button type="button" data-categoria="calidos" class="btn-discover">Explorar</button>
+        </div>
+
+        <!-- Panel FRÍOS -->
+        <div class="category-square cold-design">
+            <!-- Efecto de escarcha manual -->
+            <div class="sparkle" style="top:20%; left:30%"></div>
+            <div class="sparkle" style="top:60%; left:80%"></div>
+            <div class="sparkle" style="top:40%; left:15%"></div>
+            <div class="sparkle" style="top:80%; left:45%"></div>
+
+            <h3 class="category-label">FRÍOS</h3>
+            <button type="button" data-categoria="frios" class="btn-discover">Explorar</button>
+        </div>
+    </section>
+
+        <!-- NUEVA SECCIÓN: RELOJES (ALTA EXCLUSIVIDAD) -->
+    <section id="watches" class="section-watches">
+        <div class="watch-luxury-card">
+            <div class="watch-bg-effect"></div>
+
+            <span class="watch-header-tag">Alta Relojería GHANAM</span>
+
+            <h2 class="watch-main-title">
+                La precisión de <br> lo inalcanzable.
+            </h2>
+
+            <p class="watch-description">
+                Piezas maestras diseñadas para quienes entienden que el tiempo no solo pasa, se conquista. Materiales nobles, ingeniería de precisión y el sello de exclusividad GHANAM.
+            </p>
+
+            <div class="watch-grid-specs">
+                <div class="spec-item">
+                    <span class="spec-value">Zafiro</span>
+                    <span class="spec-label">Cristal Curvado</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-value">Automático</span>
+                    <span class="spec-label">Movimiento</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-value">100m</span>
+                    <span class="spec-label">Resistencia</span>
+                </div>
+            </div>
+
+            <div class="relative z-10">
+                <button type="button" data-categoria="relojes" class="btn-watch">
+                    Ver Catálogo Maestro
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Colección: productos del catálogo (los carga js/tienda.js desde /api/catalogo) -->
+    <section id="coleccion" class="section-coleccion">
+        <div class="coleccion-header">
+            <span class="watch-header-tag">Catálogo Maestro</span>
+            <h2 class="coleccion-title">La Colección</h2>
+            <p id="coleccion-resumen" class="coleccion-resumen" aria-live="polite"></p>
+        </div>
+
+        <div id="filtros" class="coleccion-filtros" role="group" aria-label="Filtrar por categoría">
+            <button type="button" class="filtro-chip is-active" data-filtro="todos">Todos</button>
+        </div>
+
+        <div id="productos" class="productos-grid">
+            <p class="productos-estado">Cargando la colección…</p>
+        </div>
+    </section>
+
+        <footer id="contacto" class="iconic-footer">
+        <!-- Marca de Agua -->
+        <div class="footer-watermark">GHANAM</div>
+
+        <div class="footer-container">
+            <div class="footer-main-row">
+
+                <!-- Columna 1: Navegación -->
+                <nav class="footer-nav-col">
+                    <span class="footer-column-label font-bold text-[9px] mb-4 tracking-[0.4em] text-black/20">Menú Privado</span>
+                    <a href="#coleccion" data-categoria="todos">Catálogo Maestro</a>
+                    <a href="#coleccion" data-categoria="premium">Sala Premium</a>
+                    <a href="#">Nuestra Herencia</a>
+                    <a href="#contacto">Boutiques</a>
+                </nav>
+
+                <!-- Columna 2: Centro (Logo Estático) -->
+                <div class="footer-logo-wrap">
+                    <img src="/resource/GHANAM.png" alt="GHANAM Logo" class="footer-logo-icon">
+                    <div class="h-12 w-px bg-black/10"></div>
+                    <span class="font-serif italic text-lg">Maison GHANAM</span>
+                </div>
+
+                <!-- Columna 3: Contacto -->
+                <div class="footer-contact-col">
+                    <div class="contact-pill">
+                        <span class="contact-label">Instagram</span>
+                        <a href="https://instagram.com/ghanam" target="_blank" rel="noopener" class="contact-value">@ghanam_official</a>
+                    </div>
+                    <div class="contact-pill">
+                        <span class="contact-label">Email Directo</span>
+                        <a href="mailto:exito@ghanam.com" class="contact-value text-xl">exito@ghanam.com</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Barra de Cierre -->
+            <div class="footer-bottom">
+                <div class="flex flex-col gap-1">
+                    <span>© <span id="anio-actual">2026</span> Maison Ghanam</span>
+                    <span class="text-[8px] opacity-30">Todos los derechos reservados.</span>
+                </div>
+
+                <div class="social-icons-wrap">
+                    <a href="#">INSTAGRAM</a>
+                    <a href="#">LINKEDIN</a>
+                    <a href="#">PINTEREST</a>
+                </div>
+
+                <div class="text-right">
+                    <span>Hecho para el éxito</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Panel del carrito -->
+    <div id="cart-backdrop" class="cart-backdrop" hidden></div>
+    <aside id="cart-drawer" class="cart-drawer" aria-label="Carrito de compras" aria-hidden="true">
+        <div class="cart-header">
+            <div>
+                <span class="cart-kicker">Maison GHANAM</span>
+                <h2 class="cart-title">Tu selección</h2>
+            </div>
+            <button type="button" id="cart-close" class="cart-close" aria-label="Cerrar carrito">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div id="cart-items" class="cart-items"></div>
+
+        <div class="cart-footer">
+            <div class="cart-total-row">
+                <span>Total</span>
+                <span id="cart-total">$ 0</span>
+            </div>
+            <button type="button" id="cart-checkout" class="cart-checkout" disabled>Solicitar pedido por correo</button>
+            <button type="button" id="cart-clear" class="cart-clear" disabled>Vaciar carrito</button>
+        </div>
+    </aside>
+
+    <!-- Avisos -->
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="/js/script.js"></script>
+    <script src="/js/tienda.js"></script>
+
+</body>
+
+</html>

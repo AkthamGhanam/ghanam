@@ -1,0 +1,23 @@
+# Entornos virtuales de Python (se crean en cada máquina, no se suben)
+.venv/
+venv/
+env/
+Lib/
+Scripts/
+Include/
+bin/
+lib/
+pyvenv.cfg
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+
+# Vercel y variables de entorno
+.vercel/
+.env
+.env.*
+
+# Sistema
+.DS_Store
+Thumbs.db
